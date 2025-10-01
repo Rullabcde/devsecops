@@ -1,0 +1,120 @@
+pipeline {
+  agent none
+
+  options {
+    disableConcurrentBuilds()
+    skipDefaultCheckout()
+    buildDiscarder(logRotator(
+      daysToKeepStr: '3',
+      numToKeepStr: '5',
+      artifactDaysToKeepStr: '3',
+      artifactNumToKeepStr: '5'))
+  }
+
+  triggers {
+    githubPush()
+  }
+
+  environment {
+    IMAGE_NAME = "rullabcd/app"
+    IMAGE_TAG = "${env.BUILD_NUMBER}"
+  }
+
+  stages {
+    stage('Checkout') {
+      agent any
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Code Scan') {
+      agent {
+        docker {
+          image 'sonarsource/sonar-scanner-cli:latest'
+          reuseNode true
+        }
+      }
+      steps {
+        withCredentials([
+          string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN'),
+          string(credentialsId: 'sonar-host', variable: 'SONAR_HOST')
+        ]) {
+          sh '''
+            sonar-scanner \
+              -Dsonar.projectKey=test \
+              -Dsonar.sources=. \
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/test/**,build/** \
+              -Dsonar.host.url=$SONAR_HOST \
+              -Dsonar.login=$SONAR_TOKEN
+          '''
+        }
+      }
+    }
+
+    stage('Build Docker Image') {
+      agent {
+        docker {
+          image 'docker:24.0-cli'
+          args '--entrypoint="" -v /var/run/docker.sock:/var/run/docker.sock'
+          reuseNode true
+        }
+      }
+      steps {
+        sh '''
+          docker build --target runner -t ${IMAGE_NAME}:${IMAGE_TAG} .
+        '''
+      }
+    }
+
+    stage('Vulnerability Scan') {
+      agent {
+        docker {
+          image 'aquasec/trivy:latest'
+          args '--entrypoint="" -v /var/run/docker.sock:/var/run/docker.sock'
+          reuseNode true
+        }
+      }
+      steps {
+        sh '''
+          trivy image --severity HIGH,CRITICAL --exit-code 0 --no-progress ${IMAGE_NAME}:${IMAGE_TAG}
+        '''
+      }
+    }
+
+    stage('Push to Registry') {
+      agent {
+        docker {
+          image 'docker:24.0-cli'
+          args '--entrypoint="" -v /var/run/docker.sock:/var/run/docker.sock'
+          reuseNode true
+        }
+      }
+      steps {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'docker-hub-credentials', 
+            usernameVariable: 'DOCKERHUB_USER', 
+            passwordVariable: 'DOCKERHUB_PASS')]) 
+          {
+            sh '''
+              echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+            '''
+        }
+        sh '''
+          docker push ${IMAGE_NAME}:${IMAGE_TAG}
+        '''
+      }
+    }
+
+  }
+
+  post {
+    success {
+      echo 'Build succeeded!'
+    }
+    failure {
+      echo 'Build failed!'
+    }
+  }
+}
