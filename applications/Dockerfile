@@ -13,7 +13,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1 \
   NODE_ENV=production
 RUN apk add --no-cache openssl \
-  && npx prisma generate
+  && npx prisma generate \
   && npm run build
 
 # Stage 3: Runner
