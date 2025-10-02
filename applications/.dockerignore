@@ -6,7 +6,6 @@ pnpm-debug.log
 .git
 .gitignore
 Dockerfile
-pipe
 .dockerignore
 .env
 .env.local
