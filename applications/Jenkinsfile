@@ -33,69 +33,69 @@ pipeline {
       }
     }
 
-    // stage('Code Scan') {
-    //   agent {
-    //     docker {
-    //       image 'sonarsource/sonar-scanner-cli:latest'
-    //       reuseNode true
-    //     }
-    //   }
-    //   steps {
-    //     withCredentials([
-    //       string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN'),
-    //       string(credentialsId: 'sonar-host', variable: 'SONAR_HOST')
-    //     ]) {
-    //       sh '''
-    //         export SONAR_USER_HOME=$WORKSPACE/.sonar
-    //         mkdir -p $SONAR_USER_HOME
+    stage('Code Scan') {
+      agent {
+        docker {
+          image 'sonarsource/sonar-scanner-cli:latest'
+          reuseNode true
+        }
+      }
+      steps {
+        withCredentials([
+          string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN'),
+          string(credentialsId: 'sonar-host', variable: 'SONAR_HOST')
+        ]) {
+          sh '''
+            export SONAR_USER_HOME=$WORKSPACE/.sonar
+            mkdir -p $SONAR_USER_HOME
 
-    //         sonar-scanner \
-    //           -Dsonar.projectKey=App \
-    //           -Dsonar.sources=. \
-    //           -Dsonar.exclusions=**/node_modules/**,**/test/** \
-    //           -Dsonar.host.url=$SONAR_HOST \
-    //           -Dsonar.token=$SONAR_TOKEN
-    //       '''
-    //     }
-    //   }
-    // }
+            sonar-scanner \
+              -Dsonar.projectKey=App \
+              -Dsonar.sources=. \
+              -Dsonar.exclusions=**/node_modules/**,**/test/** \
+              -Dsonar.host.url=$SONAR_HOST \
+              -Dsonar.token=$SONAR_TOKEN
+          '''
+        }
+      }
+    }
 
-    // stage('Build Docker Image') {
-    //   steps {
-    //     sh '''
-    //       docker build --target runner -t ${IMAGE_NAME}:${IMAGE_TAG} -f applications/Dockerfile applications
-    //       docker build --target migrator -t ${IMAGE_NAME}-migrator:${IMAGE_TAG} -f applications/Dockerfile applications
-    //     '''
-    //   }
-    // }
+    stage('Build Docker Image') {
+      steps {
+        sh '''
+          docker build --target runner -t ${IMAGE_NAME}:${IMAGE_TAG} -f applications/Dockerfile applications
+          docker build --target migrator -t ${IMAGE_NAME}-migrator:${IMAGE_TAG} -f applications/Dockerfile applications
+        '''
+      }
+    }
 
-    // stage('Vulnerability Scan') {
-    //   steps {
-    //     sh '''
-    //       trivy image --severity HIGH,CRITICAL --exit-code 0 --no-progress ${IMAGE_NAME}:${IMAGE_TAG}
-    //       trivy image --severity HIGH,CRITICAL --exit-code 0 --no-progress ${IMAGE_NAME}-migrator:${IMAGE_TAG}
-    //     '''
-    //   }
-    // }
+    stage('Vulnerability Scan') {
+      steps {
+        sh '''
+          trivy image --severity HIGH,CRITICAL --exit-code 0 --no-progress ${IMAGE_NAME}:${IMAGE_TAG}
+          trivy image --severity HIGH,CRITICAL --exit-code 0 --no-progress ${IMAGE_NAME}-migrator:${IMAGE_TAG}
+        '''
+      }
+    }
 
-    // stage('Push to Registry') {
-    //   steps {
-    //     withCredentials([
-    //       usernamePassword(
-    //         credentialsId: 'harbor-credentials', 
-    //         usernameVariable: 'HARBOR_USER', 
-    //         passwordVariable: 'HARBOR_PASS')]) 
-    //       {
-    //         sh '''
-    //           echo $HARBOR_PASS | docker login reg.rullabcd.my.id -u $HARBOR_USER --password-stdin
-    //         '''
-    //     }
-    //     sh '''
-    //       docker push ${IMAGE_NAME}:${IMAGE_TAG}
-    //       docker push ${IMAGE_NAME}-migrator:${IMAGE_TAG}
-    //     '''
-    //   }
-    // }
+    stage('Push to Registry') {
+      steps {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'harbor-credentials', 
+            usernameVariable: 'HARBOR_USER', 
+            passwordVariable: 'HARBOR_PASS')]) 
+          {
+            sh '''
+              echo $HARBOR_PASS | docker login reg.rullabcd.my.id -u $HARBOR_USER --password-stdin
+            '''
+        }
+        sh '''
+          docker push ${IMAGE_NAME}:${IMAGE_TAG}
+          docker push ${IMAGE_NAME}-migrator:${IMAGE_TAG}
+        '''
+      }
+    }
 
     stage('Update Manifests') {
       steps {
@@ -103,15 +103,14 @@ pipeline {
           string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')
         ]) {
           sh '''
-            ls -alh
             git config user.email "choirulrasyid09@gmail.com"
             git config user.name "Rullabcde"
             
-            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" ../manifests/deployment.yaml
-            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" ../manifests/job.yaml
+            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" manifests/deployment.yml
+            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" manifests/job.yml
 
-            git add devsecops/manifests/deployment.yaml
-            git add devsecops/manifests/job.yaml
+            git add devsecops/manifests/deployment.yml
+            git add devsecops/manifests/job.yml
             git commit -m "Update deployment image tag to ${IMAGE_TAG}"
 
             git push https://${GITHUB_TOKEN}@github.com/${REPO_USER}/${REPO_NAME}.git HEAD:main
