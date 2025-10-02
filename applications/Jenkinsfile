@@ -63,8 +63,8 @@ pipeline {
     stage('Build Docker Image') {
       steps {
         sh '''
-          docker build --target runner -t ${IMAGE_NAME}:${IMAGE_TAG} -f applications/Dockerfile .
-          docker build --target migrator -t ${IMAGE_NAME}-migrator:${IMAGE_TAG} -f applications/Dockerfile .
+          docker build --target runner -t ${IMAGE_NAME}:${IMAGE_TAG} -f applications/Dockerfile applications
+          docker build --target migrator -t ${IMAGE_NAME}-migrator:${IMAGE_TAG} -f applications/Dockerfile applications
         '''
       }
     }

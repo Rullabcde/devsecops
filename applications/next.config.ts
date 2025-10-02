@@ -34,31 +34,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-
-  webpack: (config, { dev }) => {
-    if (!dev) {
-      config.optimization.splitChunks = {
-        chunks: "all",
-        cacheGroups: {
-          default: {
-            minChunks: 2,
-            priority: -20,
-            reuseExistingChunk: true,
-          },
-          vendors: {
-            test: /[\\/]node_modules[\\/]/,
-            priority: -10,
-            reuseExistingChunk: true,
-          },
-          commons: {
-            minChunks: 2,
-            priority: -5,
-            reuseExistingChunk: true,
-          },
-        },
-      };
-    }
-  },
 };
 
 export default nextConfig;
