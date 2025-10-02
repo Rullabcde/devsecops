@@ -21,7 +21,7 @@ spec:
       - name: harbor-secret
       containers:
       - name: next-app
-        image: reg.rullabcd.my.id/library/app:__IMAGE_TAG__
+        image: reg.rullabcd.my.id/library/app:7
         env:
         - name: DATABASE_URL
           valueFrom:
