@@ -78,7 +78,7 @@ pipeline {
             passwordVariable: 'HARBOR_PASS')]) 
           {
             sh '''
-              echo $HARBOR_PASS | docker login -u $HARBOR_USER --password-stdin
+              echo $HARBOR_PASS | docker login reg.rullabcd.my.id -u $HARBOR_USER --password-stdin
             '''
         }
         sh '''
@@ -119,10 +119,10 @@ pipeline {
       sh 'docker logout reg.rullabcd.my.id || true'
     }
     success {
-      slackSend(channel: '#deployments', color: 'good', message: "Build and push of ${IMAGE_NAME}:${IMAGE_TAG} succeeded")
+      slackSend(channel: '#jenkins', color: 'good', message: "Build and push of ${IMAGE_NAME}:${IMAGE_TAG} succeeded")
     }
     failure {
-      slackSend(channel: '#deployments', color: 'danger', message: "Build and push of ${IMAGE_NAME}:${IMAGE_TAG} failed")
+      slackSend(channel: '#jenkins', color: 'danger', message: "Build and push of ${IMAGE_NAME}:${IMAGE_TAG} failed")
     }
   }
 }
