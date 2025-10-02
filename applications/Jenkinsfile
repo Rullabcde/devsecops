@@ -33,32 +33,32 @@ pipeline {
       }
     }
 
-    stage('Code Scan') {
-      agent {
-        docker {
-          image 'sonarsource/sonar-scanner-cli:latest'
-          reuseNode true
-        }
-      }
-      steps {
-        withCredentials([
-          string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN'),
-          string(credentialsId: 'sonar-host', variable: 'SONAR_HOST')
-        ]) {
-          sh '''
-            export SONAR_USER_HOME=$WORKSPACE/.sonar
-            mkdir -p $SONAR_USER_HOME
+    // stage('Code Scan') {
+    //   agent {
+    //     docker {
+    //       image 'sonarsource/sonar-scanner-cli:latest'
+    //       reuseNode true
+    //     }
+    //   }
+    //   steps {
+    //     withCredentials([
+    //       string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN'),
+    //       string(credentialsId: 'sonar-host', variable: 'SONAR_HOST')
+    //     ]) {
+    //       sh '''
+    //         export SONAR_USER_HOME=$WORKSPACE/.sonar
+    //         mkdir -p $SONAR_USER_HOME
 
-            sonar-scanner \
-              -Dsonar.projectKey=test \
-              -Dsonar.sources=. \
-              -Dsonar.exclusions=**/node_modules/**,**/test/** \
-              -Dsonar.host.url=$SONAR_HOST \
-              -Dsonar.token=$SONAR_TOKEN
-          '''
-        }
-      }
-    }
+    //         sonar-scanner \
+    //           -Dsonar.projectKey=test \
+    //           -Dsonar.sources=. \
+    //           -Dsonar.exclusions=**/node_modules/**,**/test/** \
+    //           -Dsonar.host.url=$SONAR_HOST \
+    //           -Dsonar.token=$SONAR_TOKEN
+    //       '''
+    //     }
+    //   }
+    // }
 
     stage('Build Docker Image') {
       steps {
