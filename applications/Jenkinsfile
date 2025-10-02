@@ -109,8 +109,8 @@ pipeline {
             sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" manifests/deployment.yml
             sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" manifests/job.yml
 
-            git add devsecops/manifests/deployment.yml
-            git add devsecops/manifests/job.yml
+            git add manifests/deployment.yml
+            git add manifests/job.yml
             git commit -m "Update deployment image tag to ${IMAGE_TAG}"
 
             git push https://${GITHUB_TOKEN}@github.com/${REPO_USER}/${REPO_NAME}.git HEAD:main
