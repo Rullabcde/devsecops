@@ -103,11 +103,12 @@ pipeline {
           string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')
         ]) {
           sh '''
+            ls -alh
             git config user.email "choirulrasyid09@gmail.com"
             git config user.name "Rullabcde"
             
-            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" devsecops/manifests/deployment.yaml
-            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" devsecops/manifests/job.yaml
+            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" ../manifests/deployment.yaml
+            sed -i "s|__IMAGE_TAG__|${IMAGE_TAG}|g" ../manifests/job.yaml
 
             git add devsecops/manifests/deployment.yaml
             git add devsecops/manifests/job.yaml
