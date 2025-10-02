@@ -34,6 +34,12 @@ pipeline {
     }
 
     stage('Code Scan') {
+      agent {
+        docker {
+          image 'sonarsource/sonar-scanner-cli:latest'
+          reuseNode true
+        }
+      }
       steps {
         withCredentials([
           string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN'),
