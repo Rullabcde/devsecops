@@ -46,12 +46,15 @@ pipeline {
           string(credentialsId: 'sonar-host', variable: 'SONAR_HOST')
         ]) {
           sh '''
+            export SONAR_USER_HOME=$WORKSPACE/.sonar
+            mkdir -p $SONAR_USER_HOME
+
             sonar-scanner \
               -Dsonar.projectKey=test \
               -Dsonar.sources=. \
               -Dsonar.exclusions=**/node_modules/**,**/test/** \
               -Dsonar.host.url=$SONAR_HOST \
-              -Dsonar.login=$SONAR_TOKEN
+              -Dsonar.token=$SONAR_TOKEN
           '''
         }
       }
