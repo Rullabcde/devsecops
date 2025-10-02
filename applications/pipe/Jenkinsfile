@@ -113,9 +113,7 @@ pipeline {
 
   post {
     always {
-      cleanWs() {
-        deleteDirs: true
-      }
+      cleanWs()
       sh 'docker logout reg.rullabcd.my.id || true'
     }
     success {
