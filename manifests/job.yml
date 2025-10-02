@@ -13,6 +13,8 @@ spec:
     spec:
       restartPolicy: Never
       hostNetwork: true
+      imagePullSecrets:
+      - name: harbor-secret
       containers:
       - name: migrator
         image: reg.rullabcd.my.id/library/app-migrator:__IMAGE_TAG__

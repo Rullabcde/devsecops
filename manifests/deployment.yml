@@ -17,6 +17,8 @@ spec:
         app: next-app
     spec:
       hostNetwork: true
+      imagePullSecrets:
+      - name: harbor-secret
       containers:
       - name: next-app
         image: reg.rullabcd.my.id/library/app:__IMAGE_TAG__
